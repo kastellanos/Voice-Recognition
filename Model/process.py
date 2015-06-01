@@ -12,6 +12,7 @@ from Util import recording as rec
 
 
 class voice_recognition():
+    n = 5
     def __init__(self):
         # iniciar interface
         # cargar datos
