@@ -169,7 +169,7 @@ class MainWindow(QtGui.QDialog):
             self.proceso.train_som_network()
             self.variable = False
         self.proceso.test_som_network(self.data_record)
-        print self.comandos[self.proceso.win_comand + 1]
+        print( self.comandos[self.proceso.win_comand + 1])
         os.system("espeak -ves-la+f5 \"Se esta ejecutando el comando {}\"".format(
             self.comandos[self.proceso.win_comand + 1][0]))
 

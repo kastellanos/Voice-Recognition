@@ -61,7 +61,7 @@ class voice_recognition():
                     temp1.append(dist)
                 temp.append(sum(temp1[:]))
             self.distancia.append(temp)
-        print self.distancia
+        print( self.distancia)
         self.contador = 0
         self.win_comand = -1
         mini = float('inf')
@@ -70,11 +70,11 @@ class voice_recognition():
             for j in i:
 
                 if j < mini:
-                    print j, mini, self.contador
+                    print( j, mini, self.contador)
                     mini = j
                     self.win_comand = self.contador
             self.contador += 1
-        print "contador:", self.win_comand
+        print( "contador:", self.win_comand)
 
 
 
