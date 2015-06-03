@@ -6,9 +6,12 @@ Created on Apr 16, 2015
 '''
 
 import neurolab as nl
+import numpy as np
 
 from Util import util_audio as ap
-from Util import recording as rec
+
+# from Util import recording as rec
+from Util.recordclass import record
 
 
 class voice_recognition():
@@ -20,7 +23,7 @@ class voice_recognition():
         self.number_of_neurons = 100
         self.epochs = 10000
         self.show = 10000
-
+        self.record = record()
 
     def process_data(self, dir_wavs, data_quantity):
         self.data = []
@@ -29,11 +32,16 @@ class voice_recognition():
             try:
                 single_data = ap.extract_features(temp)
                 self.data.append(single_data)
+
             except ValueError:
                 print( "Algo esta mal con los datos de entrada")
+        # print self.data
+        variable = np.asarray(self.data)
+
+        np.savetxt("control.csv", variable, delimiter=",")
 
     def get_data(self, dir_wavs, index):
-        rec.record_to_file(('{0}s{1}.wav'.format(dir_wavs, index)))
+        self.record.record_to_file(('{0}s{1}.wav'.format(dir_wavs, index)))
 
     def create_som_network(self):
         self.features_data = [[-10, 10] for i in range(self.features)]
