@@ -4,11 +4,12 @@ Created on Apr 16, 2015
 
 @author: Andres
 '''
-
+# Modified som workspace
 import neurolab as nl
 import numpy as np
 
 from Util import util_audio as ap
+
 
 # from Util import recording as rec
 from Util.recordclass import record
