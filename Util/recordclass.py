@@ -51,14 +51,14 @@ class record():
         return snd_data
 
 
-    def add_silence(snd_data, seconds, self):
+    def add_silence(self, snd_data, seconds):
         r = array('h', [0 for i in range(int(seconds * self.RATE))])
         r.extend(snd_data)
         r.extend([0 for i in range(int(seconds * self.RATE))])
         return r
 
 
-    def record(self):
+    def recordData(self):
 
 
         stream = self.p.open(format=self.FORMAT, channels=1, rate=self.RATE,
@@ -95,11 +95,9 @@ class record():
         r = self.add_silence(r, 0.5)
         return sample_width, r
 
-        print "Wrong"
 
-
-    def record_to_file(path, self):
-        sample_width, data = record()
+    def record_to_file(self, path):
+        sample_width, data = self.recordData()
         data = pack('<' + ('h' * len(data)), *data)
 
         wf = wave.open(path, 'wb')
@@ -110,7 +108,7 @@ class record():
         wf.close()
 
 
-    def play_wav(path, self):
+    def play_wav(self, path):
         # open a wav format music
         f = wave.open(path, "rb")
         # instantiate PyAudio

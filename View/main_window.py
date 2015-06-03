@@ -8,9 +8,9 @@ Created on Apr 15, 2015
 import os
 
 from PySide import QtCore, QtGui
+import numpy as np
 
 from Model import process
-
 
 class MainWindow(QtGui.QDialog):
     def procesado(self):
@@ -164,6 +164,10 @@ class MainWindow(QtGui.QDialog):
         data_to_process = []
         for i in self.data_record:
             data_to_process.extend(i)
+        variable = np.asarray(data_to_process)
+
+        np.savetxt("control.csv", variable, delimiter=",")
+
         if self.variable:
             self.proceso.data = data_to_process
             self.proceso.train_som_network()
