@@ -9,12 +9,12 @@ import os
 
 from PySide import QtCore, QtGui
 
-from Model import process
+from Model.process import voice_recognition as vr
+from Model.process import manageData as md
 
 
 class MainWindow(QtGui.QDialog):
-    def procesado(self):
-        self.proceso = process.voice_recognition()
+
 
     def __init__(self, n):
 
@@ -22,7 +22,6 @@ class MainWindow(QtGui.QDialog):
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setMinimumSize(150, 150)
         self.n = n
-        # self.window_zero()
         if n == 0:
             self.window_zero()
         elif n == 1:
@@ -30,7 +29,8 @@ class MainWindow(QtGui.QDialog):
         elif n == 2:
             self.window_two()
         elif n == 3:
-            self.procesado()
+            self.proceso = vr(number_of_neurons=6)
+            self.data_process = md()
             self.proceso.create_som_network()
             self.comandos = [("Comandos", "")]
             self.en = ["uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez"]
@@ -40,12 +40,8 @@ class MainWindow(QtGui.QDialog):
         elif n == 4:
             self.window_four()
         else:
-            # self.window_beta()
             pass
 
-
-        # self.createActions()
-        # self.statusBar()
         self.setWindowTitle("Voice Recognition(Alpha)")
 
     def window_zero(self):
@@ -108,15 +104,14 @@ class MainWindow(QtGui.QDialog):
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
         for i in range(self.cant):
-            self.proceso.get_data(self.directory, i + 1)
+            self.data_process.record_data(self.directory, i + 1)
             self.enum_progress.setText("{}/6".format(i + 1))
             self.progress_train.setValue(i + 1)
 
     def process_recording(self):
-        self.proceso.process_data(self.directory, self.cant)
-        self.data_record.append(self.proceso.data)
+        data = self.data_process.process_data(self.directory, self.cant)
+        self.data_record.append(data)
         self.comandos.append((self.text_command.toPlainText(), self.directory))
-        # self.proceso.train_som_network()
         self.update_table()
 
     def window_one(self):
@@ -159,25 +154,32 @@ class MainWindow(QtGui.QDialog):
         self.test_directory = "test/"
         if not os.path.exists(self.test_directory):
             os.makedirs(self.test_directory)
-        self.proceso.get_data(self.test_directory, 1)
-        self.proceso.process_data(self.test_directory, 1)
+        self.data_process.record_data(self.test_directory, 1)
+        data = self.data_process.process_data(self.test_directory, 1)
         data_to_process = []
         for i in self.data_record:
             data_to_process.extend(i)
         if self.variable:
-            self.proceso.data = data_to_process
-            self.proceso.train_som_network()
+            # self.proceso.data = data_to_process
+            self.proceso.train_som_network(data_to_process)
             self.variable = False
-        # print len(self.data_record)
-        self.proceso.test_som_network(self.data_record)
-        print( self.comandos[self.proceso.win_comand + 1])
-        os.system("espeak -ves-la+f5 \"Se esta ejecutando el comando {}\"".format(
-            self.comandos[self.proceso.win_comand + 1][0]))
+        mapa_numeros = {}
+        rei = 2
+        con = 0
+        for i in range(len(data_to_process)):
+
+            mapa_numeros[i] = rei
+            con += 1
+            if con == 6:
+                con = 0
+                rei += 1
+        index = self.proceso.find_winner(data)
+        print(mapa_numeros[index])
+        # print( self.comandos[mapa_numeros[index+1])
+        #os.system("espeak -ves-la+f5 \"Se esta ejecutando el comando {}\"".format( self.comandos[self.proceso.win_comand + 1][0]))
 
     def window_four(self):
         layout = QtGui.QGridLayout()
-        # self.layout_train = QtGui.QLabel("Se debe repetir \"{}\" 6 veces.".format(index))
-
         self.btn_add_command = QtGui.QPushButton("Agregar comando")
         layout.addWidget(self.layout_train, 0, 0)
 

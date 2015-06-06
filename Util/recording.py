@@ -4,64 +4,89 @@ from array import array
 from struct import pack
 import wave
 
-import pyaudio
+try:
+    import pyaudio
+
+    CHECK_PYLIB = True
+except ImportError:
+    CHECK_PYLIB = False
 
 
-THRESHOLD = 500
-CHUNK_SIZE = 1024
-FORMAT = pyaudio.paInt16
+class recording():
+    def __init__(self):
 
-RATE = 44100
-
-
-def is_silent(snd_data):
-    return max(snd_data) < THRESHOLD
-
-
-def normalize(snd_data):
-    MAXIMUM = 16384
-    times = float(MAXIMUM) / max(abs(i) for i in snd_data)
-
-    r = array('h')
-    for i in snd_data:
-        r.append(int(i * times))
-    return r
+        self.THRESHOLD = 1000
+        self.CHUNK_SIZE = 1024
+        self.FORMAT = pyaudio.paInt16
+        self.RATE = 44100
+        self.RECORD_SECONDS = 2
 
 
-def trim(snd_data):
-    def _trim(snd_data):
-        snd_started = False
+    def is_silent(self, snd_data):
+        print(max(snd_data))
+        return max(snd_data) < self.THRESHOLD
+
+
+    def normalize(self, snd_data):
+        MAXIMUM = 16384
+        times = float(MAXIMUM) / max(abs(i) for i in snd_data)
+
         r = array('h')
-
         for i in snd_data:
-            if not snd_started and abs(i) > THRESHOLD:
-                snd_started = True
-                r.append(i)
-            elif snd_started:
-                r.append(i)
+            r.append(int(i * times))
         return r
 
-    snd_data = _trim(snd_data)
 
-    snd_data.reverse()
-    snd_data = _trim(snd_data)
-    snd_data.reverse()
-    return snd_data
+    def trim(self, snd_data):
+        def _trim(snd_data):
+            snd_started = False
+            r = array('h')
+
+            for i in snd_data:
+                if not snd_started and abs(i) > self.THRESHOLD:
+                    snd_started = True
+                    r.append(i)
+                elif snd_started:
+                    r.append(i)
+            return r
+
+        snd_data = _trim(snd_data)
+
+        snd_data.reverse()
+        snd_data = _trim(snd_data)
+        snd_data.reverse()
+        return snd_data
 
 
-def add_silence(snd_data, seconds):
-    r = array('h', [0 for i in range(int(seconds * RATE))])
-    r.extend(snd_data)
-    r.extend([0 for i in range(int(seconds * RATE))])
-    return r
+    def add_silence(self, snd_data, seconds):
+        r = array('h', [0 for i in range(int(seconds * self.RATE))])
+        r.extend(snd_data)
+        r.extend([0 for i in range(int(seconds * self.RATE))])
+        return r
+
+    def record(self):
+        self.p = pyaudio.PyAudio()
+        self.stream = self.p.open(format=self.FORMAT, channels=1, rate=self.RATE,
+                                  input=True, output=True,
+                                  frames_per_buffer=self.CHUNK_SIZE)
+        r = array('h')
+        print("start recording")
+        for i in range(0, int(self.RATE / self.CHUNK_SIZE * self.RECORD_SECONDS)):
+            snd_data = array('h', self.stream.read(self.CHUNK_SIZE))
+            r.extend(snd_data)
+        print("stop recording")
+        sample_width = self.p.get_sample_size(self.FORMAT)
+        self.stream.stop_stream()
+        self.stream.close()
+        self.p.terminate()
+        return sample_width, r
 
 
-def record():
-    try:
-        p = pyaudio.PyAudio()
-        stream = p.open(format=FORMAT, channels=1, rate=RATE,
-                        input=True, output=True,
-                        frames_per_buffer=CHUNK_SIZE)
+    def record_one(self):
+        self.p = pyaudio.PyAudio()
+        self.stream = self.p.open(format=self.FORMAT, channels=1, rate=self.RATE,
+                                  input=True, output=True,
+                                  frames_per_buffer=self.CHUNK_SIZE)
         num_silent = 0
         snd_started = False
 
@@ -69,12 +94,12 @@ def record():
         print("start recording")
         while 1:
 
-            snd_data = array('h', stream.read(CHUNK_SIZE))
+            snd_data = array('h', self.stream.read(self.CHUNK_SIZE))
             if byteorder == 'big':
                 snd_data.byteswap()
             r.extend(snd_data)
 
-            silent = is_silent(snd_data)
+            silent = self.is_silent(snd_data)
             if silent and snd_started:
                 num_silent += 1
             elif not silent and not snd_started:
@@ -83,53 +108,52 @@ def record():
             if snd_started and num_silent > 30:
                 break
         print("stop recording")
-        sample_width = p.get_sample_size(FORMAT)
-        stream.stop_stream()
-        stream.close()
-        p.terminate()
+        sample_width = self.p.get_sample_size(self.FORMAT)
+        self.stream.stop_stream()
+        self.stream.close()
+        self.p.terminate()
 
         # r = normalize(r)
-        r = trim(r)
-        r = add_silence(r, 0.5)
+        r = self.trim(r)
+        r = self.add_silence(r, 0.5)
         return sample_width, r
-    except ValueError as e:
-        print "Wrong"
 
 
-def record_to_file(path):
-    sample_width, data = record()
-    data = pack('<' + ('h' * len(data)), *data)
+    def record_to_file(self, path):
+        sample_width, data = self.record()
+        data = pack('<' + ('h' * len(data)), *data)
 
-    wf = wave.open(path, 'wb')
-    wf.setnchannels(1)
-    wf.setsampwidth(sample_width)
-    wf.setframerate(RATE)
-    wf.writeframes(data)
-    wf.close()
+        wf = wave.open(path, 'wb')
+        wf.setnchannels(1)
+        wf.setsampwidth(sample_width)
+        wf.setframerate(self.RATE)
+        wf.writeframes(data)
+        wf.close()
 
-
-def play_wav(path):
-    # open a wav format music
-    f = wave.open(path, "rb")
-    # instantiate PyAudio
-    p = pyaudio.PyAudio()
-    #open stream
-    stream = p.open(format=p.get_format_from_width(f.getsampwidth()),
-                    channels=f.getnchannels(),
-                    rate=f.getframerate(),
-                    output=True)
-    #read data
-    data = f.readframes(CHUNK_SIZE)
-
-    #paly stream
-    while data != '':
-        stream.write(data)
+    """
+    def play_wav(path):
+        # open a wav format music
+        f = wave.open(path, "rb")
+        # instantiate PyAudio
+        p = pyaudio.PyAudio()
+        #open stream
+        stream = p.open(format=p.get_format_from_width(f.getsampwidth()),
+                        channels=f.getnchannels(),
+                        rate=f.getframerate(),
+                        output=True)
+        #read data
         data = f.readframes(CHUNK_SIZE)
 
-    #stop stream
-    stream.stop_stream()
-    stream.close()
+        #paly stream
+        while data != '':
+            stream.write(data)
+            data = f.readframes(CHUNK_SIZE)
 
-    #close PyAudio
-    p.terminate()
+        #stop stream
+        stream.stop_stream()
+        stream.close()
 
+        #close PyAudio
+        p.terminate()
+
+    """
