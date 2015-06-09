@@ -4,17 +4,21 @@ from array import array
 from struct import pack
 import wave
 
+
 try:
     import pyaudio
 
     CHECK_PYLIB = True
 except ImportError:
     CHECK_PYLIB = False
+from PySide import QtCore
 
 
-class recording():
+class recording(QtCore.QThread):
+    updateProgressS = QtCore.Signal(int)
+
     def __init__(self):
-
+        QtCore.QThread.__init__(self)
         self.THRESHOLD = 1000
         self.CHUNK_SIZE = 1024
         self.FORMAT = pyaudio.paInt16
@@ -70,10 +74,12 @@ class recording():
                                   input=True, output=True,
                                   frames_per_buffer=self.CHUNK_SIZE)
         r = array('h')
-        print("start recording")
+        print("start recording", int(self.RATE / self.CHUNK_SIZE * self.RECORD_SECONDS))
+
         for i in range(0, int(self.RATE / self.CHUNK_SIZE * self.RECORD_SECONDS)):
             snd_data = array('h', self.stream.read(self.CHUNK_SIZE))
             r.extend(snd_data)
+            self.updateProgressS.emit(i + 1)
         print("stop recording")
         sample_width = self.p.get_sample_size(self.FORMAT)
         self.stream.stop_stream()
@@ -129,6 +135,7 @@ class recording():
         wf.setframerate(self.RATE)
         wf.writeframes(data)
         wf.close()
+
 
     """
     def play_wav(path):

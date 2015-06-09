@@ -6,7 +6,10 @@ Created on Apr 16, 2015
 @author: Andres
 '''
 # Modified som workspace
+import os
+
 from minisom import MiniSom
+from PySide import QtCore
 
 from Util import util_audio as ap
 from Util import recording as rec
@@ -54,10 +57,13 @@ class voice_recognition():
             return index
 
 
-class manageData():
+class manageData(QtCore.QThread):
+    updateProgressQ = QtCore.Signal(int)
+    updateProgressS = QtCore.Signal(int)
     def __init__(self):
         self.data = []
         self.rec = rec.recording()
+        QtCore.QThread.__init__(self)
 
     def record_data(self, dir_wavs, index):
         """
@@ -67,6 +73,24 @@ class manageData():
         :return: void function
         """
         self.rec.record_to_file(('{0}s{1}.wav'.format(dir_wavs, index)))
+
+    def setWorkspace(self, path, q):
+        self.path = path
+        self.quantity = q
+        self.rec.updateProgressS.connect(self.emitSome)
+
+    def emitSome(self, some):
+        self.updateProgressS.emit(some)
+
+    def run(self, *args, **kwargs):
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+        for i in range(self.quantity):
+            self.record_data(self.path, i + 1)
+            self.updateProgressQ.emit(i + 1)
+
+    def setProgress(self, progress):
+        self.progressBar.setValue(progress)
 
     def process_data(self, dir_wavs, data_quantity):
         """
