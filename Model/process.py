@@ -111,9 +111,7 @@ class manageData(QtCore.QThread):
             except ValueError:
                 print( "Algo esta mal con los datos de entrada")
         # print self.data
-        # variable = np.asarray(self.data)
 
-        # np.savetxt("control.csv", variable, delimiter=",")
         return self.data
 
 

@@ -8,10 +8,10 @@ Created on Apr 15, 2015
 import os
 
 from PySide import QtCore, QtGui
+import numpy as np
 
 from Model.process import voice_recognition as vr
 from Model.process import manageData as md
-
 
 class MainWindow(QtGui.QDialog):
 
@@ -29,7 +29,7 @@ class MainWindow(QtGui.QDialog):
         elif n == 2:
             self.window_two()
         elif n == 3:
-            self.proceso = vr(number_of_neurons=6)
+            self.proceso = vr(number_of_neurons=10, features=13)
             self.data_process = md()
             self.proceso.create_som_network()
             self.comandos = [("Comandos", "")]
@@ -157,12 +157,17 @@ class MainWindow(QtGui.QDialog):
         self.data_process.record_data(self.test_directory, 1)
         data = self.data_process.process_data(self.test_directory, 1)
         data_to_process = []
+
         for i in self.data_record:
             data_to_process.extend(i)
+        variable = np.asarray(data_to_process)
+
+        np.savetxt("control.csv", variable, delimiter=",")
         if self.variable:
             # self.proceso.data = data_to_process
             self.proceso.train_som_network(data_to_process)
             self.variable = False
+
         mapa_numeros = {}
         rei = 2
         con = 0

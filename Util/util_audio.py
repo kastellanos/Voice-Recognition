@@ -57,7 +57,7 @@ def create_mfcc(x, y):
         x---señal
         y---sample rate
     """
-    return librosa.feature.mfcc(x, y)
+    return librosa.feature.mfcc(x, y, n_mfcc=26)
 
 
 def extract_features(file_path):
@@ -73,7 +73,9 @@ def extract_features(file_path):
     signal, rate = read_wave(file_path)
     y = create_mfcc(signal, rate)
     z = mfcc_vector(y)
-    return z[0]
+    print len(z), len(z[0])
+    k = z[0]
+    return k[:13]
 
 
 def preprocess_mfcc(mfcc):
@@ -82,3 +84,4 @@ def preprocess_mfcc(mfcc):
         mfcc_cp[:, i] = mfcc[:, i] - np.mean(mfcc[:, i])
         mfcc_cp[:, i] = mfcc_cp[:, i] / np.max(np.abs(mfcc_cp[:, i]))
     return mfcc_cp
+

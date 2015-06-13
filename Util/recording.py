@@ -1,16 +1,11 @@
 __author__ = 'Andres'
-from sys import byteorder
+
 from array import array
 from struct import pack
 import wave
 
-
-try:
-    import pyaudio
-
-    CHECK_PYLIB = True
-except ImportError:
-    CHECK_PYLIB = False
+import pyaudio
+import scipy as sp
 from PySide import QtCore
 
 
@@ -82,13 +77,48 @@ class recording(QtCore.QThread):
             self.updateProgressS.emit(i + 1)
         print("stop recording")
         sample_width = self.p.get_sample_size(self.FORMAT)
+        y1 = sp.signal.medfilt(r, 3)
         self.stream.stop_stream()
         self.stream.close()
         self.p.terminate()
-        return sample_width, r
+        return sample_width, y1
+
+    """def record(self):
+        #f= open( , 'wb' )
+        # Minimum set of parameters we need to create Encoder
+
+        cparams= { 'id': acodec.getCodecID( "mp3" ),
+                 'bitrate': 128000,
+                 'sample_rate': 44100,
+                 'channels': 1 }
+        ac= acodec.Encoder( cparams )
+        snd= sound.Input( 44100, 2, sound.AFMT_S16_LE )
+        snd.start()
+        # Loop until recorded position greater than the limit specified
+        r = array('h')
+        print("**start**")
+        while snd.getPosition()<= self.RECORD_SECONDS:
+            print snd.getPosition()
+            s= snd.getData()
+            if s and len( s ):
+                for fr in s:
+        # We definitely should use mux first, but for
+
+        # simplicity reasons this way it'll work also
+                    print s
+                    r.extend( fr )
+            else:
+                time.sleep( .003 )
 
 
-    def record_one(self):
+
+            # Stop listening the incoming sound from the microphone or line in
+
+        snd.stop()
+        print("**end**")
+        return 44100,r
+"""
+    """def record_one(self):
         self.p = pyaudio.PyAudio()
         self.stream = self.p.open(format=self.FORMAT, channels=1, rate=self.RATE,
                                   input=True, output=True,
@@ -123,7 +153,7 @@ class recording(QtCore.QThread):
         r = self.trim(r)
         r = self.add_silence(r, 0.5)
         return sample_width, r
-
+    """
 
     def record_to_file(self, path):
         sample_width, data = self.record()
