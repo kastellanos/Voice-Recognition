@@ -20,8 +20,9 @@ class carta():
         self.user_index = 0
         self.info = []
         self.user_list = []
-        self.command_list = ["Print 1", "Print 2", "Print 3", "Print 4", "Print 5", "Print 6", "Print 7", "Print 8",
-                             "Print 9", "Print 10"]
+        self.command_list = ["Abrir Google Chrome", "Abrir Administrador de tareas", "Abrir consola",
+                             "Abrir calculadora", "Abrir internet explorer",
+                             "Abrir paint", "Abrir notepad", "Abrir reproductor", "Apagar sistema", "Reiniciar sistema"]
 
     def get_cmd_list(self):
         return self.command_list

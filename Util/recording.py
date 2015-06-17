@@ -5,7 +5,7 @@ from struct import pack
 import wave
 
 import pyaudio
-import scipy as sp
+from scipy.signal import medfilt
 from PySide import QtCore
 
 
@@ -35,7 +35,8 @@ class recording(QtCore.QThread):
             self.updateProgressS.emit(i + 1)
         print("stop recording")
         sample_width = self.p.get_sample_size(self.FORMAT)
-        y1 = sp.signal.medfilt(r, 3)
+        y1 = medfilt(r, 3)
+
         self.stream.stop_stream()
         self.stream.close()
         self.p.terminate()
@@ -81,3 +82,7 @@ class recording(QtCore.QThread):
         p.terminate()
 
     """
+
+
+rec = recording()
+rec.record_to_file("pip.wav")
