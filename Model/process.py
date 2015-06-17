@@ -16,7 +16,7 @@ from Util import recording as rec
 
 
 class voice_recognition():
-    def __init__(self, features=13, number_of_neurons=10, epochs=1000, data=None):
+    def __init__(self, features=13, number_of_neurons=10, epochs=2000, data=None):
         # iniciar interface
         # cargar datos
         self.features = features

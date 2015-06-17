@@ -27,7 +27,7 @@ class recording(QtCore.QThread):
                                   input=True, output=True,
                                   frames_per_buffer=self.CHUNK_SIZE)
         r = array('h')
-        print("start recording", int(self.RATE / self.CHUNK_SIZE * self.RECORD_SECONDS))
+        print("start recording")
 
         for i in range(0, int(self.RATE / self.CHUNK_SIZE * self.RECORD_SECONDS)):
             snd_data = array('h', self.stream.read(self.CHUNK_SIZE))
@@ -36,7 +36,7 @@ class recording(QtCore.QThread):
         print("stop recording")
         sample_width = self.p.get_sample_size(self.FORMAT)
         y1 = medfilt(r, 3)
-
+        # y1 = r
         self.stream.stop_stream()
         self.stream.close()
         self.p.terminate()
@@ -83,6 +83,3 @@ class recording(QtCore.QThread):
 
     """
 
-
-rec = recording()
-rec.record_to_file("pip.wav")

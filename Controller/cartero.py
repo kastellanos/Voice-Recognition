@@ -31,14 +31,14 @@ class carta():
         self.user_list[self.get_current_user_index()].add_command(self.command_list[index])
 
     def users_list(self, firstPick):
-        print( os.path.isfile(self.file_name) )
+
         if not os.path.isfile(self.file_name):
             file_to_create = open(self.file_name, 'w')
             file_to_create.close()
         file_info = open(self.file_name, 'r')
         m = file_info.readlines()
         k = []
-        print m
+
         if firstPick:
             for i in m:
                 self.user_list.append(usuario(name=i.strip()))
@@ -59,7 +59,7 @@ class carta():
 
     def select_user(self, user_index):
         self.user_index = user_index
-        print os.path.isfile(self.get_user_by_index(user_index) + ".gop")
+
         if os.path.isfile(self.get_user_by_index(user_index) + ".gop"):
             self.user_list[user_index].load(self.get_user_by_index(user_index))
             us = usuario()
@@ -112,6 +112,9 @@ class usuario(object):
         self.net.create_som_network()
         self.list_cmd = []
         self.en = ["uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez"]
+        self.command_list = ["Abrir Google Chrome", "Abrir Administrador de tareas", "Abrir consola",
+                             "Abrir calculadora", "Abrir internet explorer",
+                             "Abrir paint", "Abrir notepad", "Abrir reproductor", "Apagar sistema", "Reiniciar sistema"]
         self.data = []
         self.test_list = []
         self.test_index = 0
@@ -150,14 +153,28 @@ class usuario(object):
     def get_test_list(self):
         return self.test_list
 
+    def excec_command(self, ind):
+        index = ind
+        self.command_exc = ["start chrome.exe", "taskmgr.exe", "start cmd.exe", "calc.exe", "start iexplore.exe",
+                            "mspaint", "notepad", "wmplayer", "shutdown /f now", "shutdown /r"]
+
+        indc = 0
+        for i in self.command_list:
+            if i == index:
+                index = indc
+            indc += 1
+
+        os.system(self.command_exc[index])
 
     def simulate(self, data):
+        self.ka = self.list_cmd[self.net.find_winner(data) - 1][1].strip()
         print "espeak -ves-la+f4 \"Se esta ejecutando el comando {}\"".format(
-            self.list_cmd[self.net.find_winner(data) - 1][1].strip())
+            self.ka)
 
         os.system("espeak -ves-la+f4 \"Se esta ejecutando el comando {}\"".format(
             self.list_cmd[self.net.find_winner(data) - 1][1].strip()))
         self.test_list[self.test_index - 1][1] = self.en[self.net.find_winner(data) - 1]
+        self.excec_command(self.ka)
         return self.net.find_winner(data) - 1
 
     def save(self):
@@ -177,7 +194,7 @@ class usuario(object):
         self.state = bool(f.readline())
         self.cmd_index = int(f.readline())
         self.list_cmd = np.loadtxt(name + "/comandos.csv", usecols=(0, 1), delimiter=",", dtype=str)
-        print "yolooo", self.list_cmd[0]
+
         self.data = np.loadtxt(name + "/datos.csv", delimiter=",")
         self.train_network(self.data)
 
@@ -189,20 +206,20 @@ class usuario(object):
         p = []
         mini = float('inf')
         het = np.min(map)
-        print self.net.network.winner(data)
+
         for i in range(self.neuro):
             for j in range(self.neuro):
                 x.append(i + 1)
                 y.append(j + 1)
                 z.append(map[i][j])
-                print (mini - het),
+
                 if map[i][j] < mini:
                     mini = map[i][j]
                     p = (i, j)
-            print ""
+
         s = [20 * 4 ** 3 for n in range(len(x))]
         plt.figure()
-        print p
+
         plt.text(p[0] + 1, p[1] + 1, str(self.net.find_winner(data)))
         plt.scatter(x, y, c=z, s=s)
         plt.show()

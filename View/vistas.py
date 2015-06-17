@@ -349,7 +349,7 @@ class AddTestWindow(QtGui.QDialog):
         lista = self.pw.get_test_list()
         index = -1
         for i in range(len(lista)):
-            print self.table.cellWidget(i, 0).isChecked()
+
             if self.table.cellWidget(i, 0).isChecked():
                 index = i
         return index
@@ -358,7 +358,7 @@ class AddTestWindow(QtGui.QDialog):
         if index == -1:
 
             ind = self.pw.get_test_index()
-            print ind
+
             dir = "{}/test/".format(self.pw.get_user_by_index(self.pw.get_current_user_index()).strip())
             data = self.worker.process_data(dir, 1, data_index=ind)
             self.pw.simulate(data)
