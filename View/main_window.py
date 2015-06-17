@@ -5,6 +5,7 @@ Created on Apr 15, 2015
 
 @author: Andres
 '''
+"""
 import os
 
 from PySide import QtCore, QtGui
@@ -98,7 +99,7 @@ class MainWindow(QtGui.QDialog):
         self.btn_add_command.clicked.connect(self.process_recording)
 
     def start_recording(self):
-
+        self.
         self.cant = 6
         self.directory = "train/{}/".format(self.en[self.actual - 1])
         if not os.path.exists(self.directory):
@@ -199,6 +200,6 @@ class MainWindow(QtGui.QDialog):
 
         self.btn_start_try.clicked.connect(self.record_voice)
 
-
+"""
 
 
