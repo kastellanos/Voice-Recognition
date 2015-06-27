@@ -512,7 +512,7 @@ class AddFileTestWindow(QtGui.QDialog):
         self.another_win.show()
 
 
-#--------------------------
+# --------------------------
 # End Test
 #view states
 class ViewStats(QtGui.QDialog):

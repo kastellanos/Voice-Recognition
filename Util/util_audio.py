@@ -72,14 +72,14 @@ def extract_features(file_path):
     """
     signal, rate = read_wave(file_path)
     # from scipy.signal import medfilt
-    #y1 = medfilt(signal, 3)
+    # y1 = medfilt(signal, 3)
     y = create_mfcc(signal, rate)
     #delta = mfcc_vector(librosa.feature.delta(y))
 
     z = mfcc_vector(y)
     # print len(z), len(z[0])
     k = z[0][0:13]
-    #u = delta[0][:13]
+    # u = delta[0][:13]
     #h = np.concatenate((k,u))
     #print k.shape
     #print h
