@@ -43,13 +43,8 @@ class voice_recognition():
             if counter == 6:
                 counter = 0
                 temp += 1
-                #print self.network.quantization_error(data)
+                # print self.network.quantization_error(data)
 
-    def save_som_network(self, path):
-        self.network.save(path)
-
-    def load_som_network(self, path):
-        self.network.load(path)
 
 
 
