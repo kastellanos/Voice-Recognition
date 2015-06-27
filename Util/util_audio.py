@@ -57,7 +57,7 @@ def create_mfcc(x, y):
         x---señal
         y---sample rate
     """
-    return librosa.feature.mfcc(x, y, n_mfcc=26)
+    return librosa.feature.mfcc(y=x, sr=y, n_mfcc=26)
 
 
 def extract_features(file_path):
@@ -71,11 +71,20 @@ def extract_features(file_path):
         file_path---Ruta del archivo a procesar
     """
     signal, rate = read_wave(file_path)
+    # from scipy.signal import medfilt
+    #y1 = medfilt(signal, 3)
     y = create_mfcc(signal, rate)
+    #delta = mfcc_vector(librosa.feature.delta(y))
+
     z = mfcc_vector(y)
-    print len(z), len(z[0])
-    k = z[0]
-    return k[:13]
+    # print len(z), len(z[0])
+    k = z[0][0:13]
+    #u = delta[0][:13]
+    #h = np.concatenate((k,u))
+    #print k.shape
+    #print h
+    #h.shape = (26,)
+    return k
 
 
 def preprocess_mfcc(mfcc):

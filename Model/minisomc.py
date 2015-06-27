@@ -9,6 +9,7 @@ from numpy import (array, unravel_index, nditer, linalg, random, subtract,
 
 from Model import tool
 
+
 """
     Minimalistic implementation of the Self Organizing Maps (SOM).
 
@@ -25,7 +26,7 @@ def fast_norm(x):
 
 
 class MiniSom:
-    def __init__(self, x, y, input_len, sigma=1.0, learning_rate=0.5, random_seed=None):
+    def __init__(self, x, y, input_len, sigma=1.0, learning_rate=0.05, random_seed=5):
         """
             Initializes a Self Organizing Maps.
             x,y - dimensions of the SOM
@@ -171,6 +172,7 @@ class MiniSom:
         error = 0
         for x in data:
             error += fast_norm(x - self.weights[self.winner(x)])
+
         return error / len(data)
 
     def win_map(self, data):

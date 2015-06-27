@@ -5,7 +5,6 @@ from struct import pack
 import wave
 
 import pyaudio
-from scipy.signal import medfilt
 from PySide import QtCore
 
 
@@ -35,8 +34,8 @@ class recording(QtCore.QThread):
             self.updateProgressS.emit(i + 1)
         print("stop recording")
         sample_width = self.p.get_sample_size(self.FORMAT)
-        y1 = medfilt(r, 3)
-        # y1 = r
+
+        y1 = r
         self.stream.stop_stream()
         self.stream.close()
         self.p.terminate()

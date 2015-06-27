@@ -16,7 +16,7 @@ from Util import recording as rec
 
 
 class voice_recognition():
-    def __init__(self, features=13, number_of_neurons=10, epochs=2000, data=None):
+    def __init__(self, features=13, number_of_neurons=6, epochs=1000, data=None):
         # iniciar interface
         # cargar datos
         self.features = features
@@ -36,12 +36,14 @@ class voice_recognition():
         temp = 1
         counter = 0
         self.network.train_random(self.data, self.epochs)
+        # self.network.train_batch(self.data,self.epochs)
         for i in range(len(self.data)):
             self.data_mapping[self.network.winner(self.data[i])] = temp
             counter += 1
             if counter == 6:
                 counter = 0
                 temp += 1
+                #print self.network.quantization_error(data)
 
     def save_som_network(self, path):
         self.network.save(path)
@@ -61,6 +63,7 @@ class voice_recognition():
             index = 0
             for i in self.data_mapping:
                 if map[i[0]][i[1]] < mini:
+                    print map[i[0]][i[1]]
                     index = self.data_mapping[i]
                     mini = map[i[0]][i[1]]
             return index
@@ -121,15 +124,21 @@ class manageData(QtCore.QThread):
         :return: datos procesados.
         """
         if data_index != -1:
-            temp = "{0}s{1}.wav".format(dir_wavs, data_index)
-            single_data = ap.extract_features(temp)
-            return single_data
+            if data_index == -2:
+                temp = dir_wavs
+                single_data = ap.extract_features(temp)
+                return single_data
+            else:
+                temp = "{0}s{1}.wav".format(dir_wavs, data_index)
+                single_data = ap.extract_features(temp)
+                return single_data
         else:
             self.data = []
             for i in range(data_quantity):
                 temp = '{0}s{1}.wav'.format(dir_wavs, i + 1)
                 try:
                     single_data = ap.extract_features(temp)
+                    #print len(single_data)
                     self.data.append(single_data)
 
                 except ValueError:

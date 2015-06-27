@@ -106,7 +106,7 @@ class usuario(object):
         self.name = name
         self.state = state
         self.cmd_index = cmd_index
-        self.neuro = 6
+        self.neuro = 10
         self.net = vr(number_of_neurons=self.neuro)
 
         self.net.create_som_network()
@@ -142,6 +142,7 @@ class usuario(object):
         self.data = data
         self.state = True
         self.net.train_som_network(data)
+        print ("entrenado")
 
     def add_test(self, command):
         self.test_index += 1
@@ -168,8 +169,10 @@ class usuario(object):
 
     def simulate(self, data):
         self.ka = self.list_cmd[self.net.find_winner(data) - 1][1].strip()
-        print "espeak -ves-la+f4 \"Se esta ejecutando el comando {}\"".format(
-            self.ka)
+        print (self.list_cmd)
+        print ("winner: ", self.net.find_winner(data))
+        print( "espeak -ves-la+f4 \"Se esta ejecutando el comando {}\"".format(
+            self.ka) )
 
         os.system("espeak -ves-la+f4 \"Se esta ejecutando el comando {}\"".format(
             self.list_cmd[self.net.find_winner(data) - 1][1].strip()))
@@ -217,7 +220,7 @@ class usuario(object):
                     mini = map[i][j]
                     p = (i, j)
 
-        s = [20 * 4 ** 3 for n in range(len(x))]
+        s = [20 * 3 ** 3 for n in range(len(x))]
         plt.figure()
 
         plt.text(p[0] + 1, p[1] + 1, str(self.net.find_winner(data)))

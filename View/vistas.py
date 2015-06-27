@@ -234,13 +234,15 @@ class LoginUserWindow(QtGui.QDialog):
 
         btn_add_cmd = QtGui.QPushButton("Agregar comandos")
         btn_add_test = QtGui.QPushButton("Agregar pruebas")
+        btn_add_file_test = QtGui.QPushButton("Agregar Archivos prueba")
 
         layout.addWidget(text_users, 0, 0)
         layout.addWidget(btn_add_cmd, 0, 1)
         layout.addWidget(btn_add_test, 0, 2)
-
+        layout.addWidget(btn_add_file_test, 0, 3)
         btn_add_cmd.clicked.connect(self._add_cmd_win)
         btn_add_test.clicked.connect(self._add_test_win)
+        btn_add_file_test.clicked.connect(self._add_file_test_win)
         self.setLayout(layout)
 
     def show(self):
@@ -261,6 +263,9 @@ class LoginUserWindow(QtGui.QDialog):
         self.another_win = AddTestWindow(pw=self.pw)
         self.another_win.show()
 
+    def _add_file_test_win(self):
+        self.another_win = AddFileTestWindow(pw=self.pw)
+        self.another_win.show()
 
 class AddTestWindow(QtGui.QDialog):
     def __init__(self, pw):
@@ -274,7 +279,7 @@ class AddTestWindow(QtGui.QDialog):
 
     def configWindow(self):
         self.table = QtGui.QTableWidget()
-        self.table.setRowCount(10)
+        self.table.setRowCount(30)
         self.table.setColumnCount(3)
         self.table.setHorizontalHeaderLabels(["", "esperado", "Obtenido"])
         layout = QtGui.QGridLayout()
@@ -365,9 +370,6 @@ class AddTestWindow(QtGui.QDialog):
         else:
             pass  # implementar checkbox test
 
-    def train_network(self):
-        print self.checkBox_index()
-
 
     def set_Qprogress(self, progress):
         self.progress_train.setValue(progress)
@@ -387,6 +389,130 @@ class AddTestWindow(QtGui.QDialog):
         self.another_win.show()
 
 
+# -----Add FILE test windows
+class AddFileTestWindow(QtGui.QDialog):
+    def __init__(self, pw):
+        super(AddFileTestWindow, self).__init__()
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.setMinimumSize(500, 150)
+        self.another_win = None
+        self.pw = pw
+        self.files_list = []
+        self.en = ["uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez"]
+
+    def configWindow(self):
+        self.table = QtGui.QTableWidget()
+        self.table.setRowCount(30)
+        self.table.setColumnCount(3)
+        self.table.setHorizontalHeaderLabels(["", "esperado", "Obtenido"])
+        layout = QtGui.QGridLayout()
+        command_name = QtGui.QLabel("Pruebas actuales")
+        command_add = QtGui.QLabel("Agregar Prueba")
+        self.cmd = QtGui.QComboBox()
+        command_index = QtGui.QLabel("Numero probado")
+        self.progress_train = QtGui.QProgressBar()
+        self.progress_record = QtGui.QProgressBar()
+        self.progress_train.setMaximum(1)
+
+        self.progress_record.setMaximum(86)
+        btn_show_statistics = QtGui.QPushButton("Ver estadisticas")
+        btn_add_command = QtGui.QPushButton("Agregar Prueba")
+        btn_cancel_command = QtGui.QPushButton("Mapa de activacion")
+        btn_hit_map = QtGui.QPushButton("Mapa de activacion")
+        self.cmd.addItems(self.en)
+        layout.addWidget(command_name, 0, 0)
+        layout.addWidget(self.table, 1, 0)
+        layout.addWidget(command_add, 2, 0)
+
+        layout.addWidget(self.progress_record, 3, 0)
+        layout.addWidget(self.progress_train, 4, 0)
+        layout.addWidget(command_index, 5, 0)
+        layout.addWidget(self.cmd, 6, 0)
+        layout.addWidget(btn_show_statistics, 6, 1)
+        layout.addWidget(btn_add_command, 7, 0)
+        layout.addWidget(btn_cancel_command, 7, 1)
+
+        self.setLayout(layout)
+
+        btn_add_command.clicked.connect(self.add_test)
+        btn_cancel_command.clicked.connect(self.activation_map)
+        btn_show_statistics.clicked.connect(self.view_statistics)
+        self.worker = md()
+        self.worker.updateProgressQ.connect(self.set_Qprogress)
+
+        self.worker.updateProgressS.connect(self.set_Sprogress)
+        self.worker.record_finished.connect(self.update_table)
+
+    def add_test(self):
+        self.fname = QtGui.QFileDialog.getOpenFileName(self, 'Open file')
+        # self.fname = self.fname[0]
+        self.directory = self.fname[0]
+        self.files_list.append(self.directory)
+        self.pw.add_test(self.cmd.currentIndex())
+        self.update_table(1)
+
+    def simulate(self, index=-2):
+        if index == -2:
+
+            ind = index
+
+            dir = self.directory
+            print dir
+            data = self.worker.process_data(dir, 1, data_index=ind)
+            self.pw.simulate(data)
+        else:
+            pass  # implementar checkbox test
+
+    def show(self):
+        self.configWindow()
+        super(AddFileTestWindow, self).show()
+
+    def update_table(self, flag):
+        if flag == 1:
+            self.simulate()
+
+            lista = self.pw.get_test_list()
+            for i in range(len(lista)):
+                k = QtGui.QCheckBox()
+                self.table.setCellWidget(i, 0, k)
+                self.table.setItem(i, 1, QtGui.QTableWidgetItem(lista[i][0]))
+                self.table.setItem(i, 2, QtGui.QTableWidgetItem(lista[i][1]))
+                if lista[i][1] == "Not tested":
+                    self.table.item(i, 2).setBackground(QtGui.QColor('yellow'))
+                if lista[i][1] == lista[i][0]:
+                    self.table.item(i, 2).setBackground(QtGui.QColor('green'))
+                else:
+                    self.table.item(i, 2).setBackground(QtGui.QColor('red'))
+
+    def checkBox_index(self):
+        lista = self.pw.get_test_list()
+        index = -1
+        for i in range(len(lista)):
+
+            if self.table.cellWidget(i, 0).isChecked():
+                index = i
+        return index
+
+
+    def set_Qprogress(self, progress):
+        self.progress_train.setValue(progress)
+
+    def set_Sprogress(self, progress):
+        self.progress_record.setValue(progress)
+
+    def activation_map(self):
+        ind = self.checkBox_index()
+
+        dir = self.files_list[ind]
+        data = self.worker.process_data(dir, 1, data_index=-2)
+        self.pw.activation_map(data)
+
+    def view_statistics(self):
+        self.another_win = ViewStats(pw=self.pw)
+        self.another_win.show()
+
+
+#--------------------------
 # End Test
 #view states
 class ViewStats(QtGui.QDialog):
@@ -403,7 +529,7 @@ class ViewStats(QtGui.QDialog):
 
     def configWindow(self):
         self.table = QtGui.QTableWidget()
-        self.table.setRowCount(10)
+        self.table.setRowCount(30)
         self.table.setColumnCount(2)
         self.table.setHorizontalHeaderLabels(["Comando", "Porcentaje acierto"])
 
@@ -448,7 +574,10 @@ class ViewStats(QtGui.QDialog):
         dicci = {}
         for i in range(len(lista)):
             if lista[i][0] not in dicci:
-                dicci[lista[i][0]] = 1
+                if lista[i][0] == lista[i][1]:
+                    dicci[lista[i][0]] = 1
+                else:
+                    dicci[lista[i][0]] = 0
             else:
                 if lista[i][0] == lista[i][1]:
                     dicci[lista[i][0]] += 1
@@ -500,7 +629,7 @@ class AddCommandWindow(QtGui.QDialog):
 
     def configWindow(self):
         self.table = QtGui.QTableWidget()
-        self.table.setRowCount(10)
+        self.table.setRowCount(30)
         self.table.setColumnCount(2)
         self.table.setHorizontalHeaderLabels(["Numero", "Comando"])
 
